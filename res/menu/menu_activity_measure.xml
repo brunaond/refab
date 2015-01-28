@@ -1,0 +1,36 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="cz.cvut.fel.wavrecordtest.RunMainActivity" >
+
+    <item
+        android:id="@+id/settings_select_sample"
+        android:orderInCategory="100"
+        android:title="@string/setting_select_sample"        
+        android:showAsAction="never" />
+    
+    <item
+        android:id="@+id/settings_sample16"
+        android:title="@string/setting_sample_16"       
+		/>
+
+    <item
+        android:id="@+id/settings_sample7"
+        android:title="@string/setting_sample_7"
+        />
+    
+    <item
+        android:id="@+id/settings_default"
+        android:title="@string/action_use_default_sample"
+        />
+    
+    <item
+        android:id="@+id/source_mic"
+        android:title="@string/source_mic"
+        />
+
+    <item
+        android:id="@+id/source_voice_rec"
+        android:title="@string/source_voice_rec"
+        />
+
+</menu>
