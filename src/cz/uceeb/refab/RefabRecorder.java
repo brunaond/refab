@@ -13,8 +13,6 @@ import android.media.AudioRecord;
 import android.media.MediaScannerConnection;
 import android.os.Environment;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 public class RefabRecorder extends AudioRecord {
 	private static final int RECORDER_SAMPLERATE = 44100;
@@ -23,7 +21,7 @@ public class RefabRecorder extends AudioRecord {
 	int BufferElements2Rec = 1024; // want to play 2048 (2K) since 2 bytes we use only 1024
 	int BytesPerElement = 2; // 2 bytes in 16bit format
 	private static String filePath = null;
-	private static String file_wav = null;
+	private static String fileWav = null;
 	
 	boolean isRecording = false;
 	private Thread recordingThread = null;
@@ -105,10 +103,9 @@ public class RefabRecorder extends AudioRecord {
 		/*Saving the WAV file*/
 		try {
 			is = new FileInputStream(filePath);
-			//file_wav = Environment.getExternalStorageDirectory().getAbsolutePath();
-			file_wav = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getAbsolutePath();
-			file_wav += "/rec_"+timeStamp+".wav";		
-			os = new FileOutputStream(file_wav);
+			fileWav = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getAbsolutePath();
+			fileWav += "/rec_"+timeStamp+".wav";		
+			os = new FileOutputStream(fileWav);
 
 			length = is.getChannel().size();
 			buffer = new byte[length.intValue()];						
@@ -117,7 +114,7 @@ public class RefabRecorder extends AudioRecord {
 			os.write(header);
 			os.write(buffer);
 			os.close();		
-			MediaScannerConnection.scanFile(context, new String[] {file_wav, filePath}, null, null);
+			MediaScannerConnection.scanFile(this.context, new String[] {fileWav, filePath}, null, null);
 		} catch(FileNotFoundException e) {
 			e.printStackTrace();
 		} catch(IOException e) {
@@ -126,6 +123,7 @@ public class RefabRecorder extends AudioRecord {
 
 	}	
 	
+	//TODO Fix the header assembler - files are not readable as wav in players.
 	private byte[] assembleHeader(long l) {
 		Long size = l;
 		byte[] RIFF = {0x52, 0x49, 0x46, 0x46};
@@ -208,11 +206,15 @@ public class RefabRecorder extends AudioRecord {
 	}	
 	
 	public String[] filesProduced(){
-		String[] filesProduced = {file_wav, filePath};
+		String[] filesProduced = {fileWav, filePath};
 		return filesProduced;
 	}
 	
-	public String tempFilePath(){
+	public String getRawFilePath(){
 		return filePath;
+	}
+	
+	public String getWavFilePath(){
+		return fileWav;
 	}
 }

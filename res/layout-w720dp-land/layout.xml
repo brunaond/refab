@@ -24,7 +24,7 @@
 	       android:layout_width="wrap_content"
 	       android:layout_height="wrap_content"
 	       android:text="@string/plot"
-	       android:onClick="plotData" />
+	       android:onClick="processRecordings" />
 	   
 	   <Button android:id="@+id/play_and_record_button"
 	       android:layout_width="wrap_content"

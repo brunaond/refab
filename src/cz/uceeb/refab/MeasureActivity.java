@@ -4,10 +4,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 
 import cz.uceeb.refab.R;
+import cz.uceeb.refab.data.Signal;
 import android.app.Activity;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -120,21 +122,66 @@ public class MeasureActivity extends Activity {
 			//startRecording();
 			//Start the RefabRecorder
 			recorder.startRecording();
-			startPlaying(getCurrentFocus());
+			startPlaying(getCurrentFocus());			
 			TextView mText = (TextView) findViewById(R.id.status_text_view);
 		    mText.setText("Recording now...");
 		}		
 	}
-
 	
-	public void plotData(View v){
+	public void processRecordings(View v){
 		//Verify that string is not null
-		//Signal signal = new Signa(rawTempFile);
-		//signal.process();
-		//signal.getReflectifity();
-		
-		Toast toast = Toast.makeText(this, "Pressed plotData", Toast.LENGTH_SHORT);
-		toast.show();		
+		TextView tv = (TextView) findViewById(R.id.status_text_view);
+		tv.setText("Processing recording");
+		Signal signal = new Signal(this, recorder.getRawFilePath(), recorder.getWavFilePath(), 16);
+		signal.processData();
+		tv.setText("Measured distance is: " + signal.getDistance());
+		tv = (TextView) findViewById(R.id.busrsts_detected_text_view);
+		tv.setText("# Bursts: " + signal.getNumberOfBurstsDetected());
+		//signal.plot();
+//		Toast.makeText(this, "Pressed plot", Toast.LENGTH_SHORT).show();
 	}	
+	
+	public void drawPlot(double[] xData, double[] yData) {
+		XYPlot plot = (XYPlot) findViewById(R.id.mySimpleXYPlot);
+		Number[] series1Numbers, domainNumbers;
+		if (xData.length != yData.length){
+			return;
+		}
+		series1Numbers = new Number[xData.length];
+		domainNumbers = new Number[yData.length];
+		
+        // Create a couple arrays of y-values to plot:
+		for (int i = 0; i< xData.length; i++) {
+			series1Numbers[i]=yData[i];
+			domainNumbers[i]=xData[i];			
+		}
+        //Number[] series1Numbers = {1, 8, 5, 2, 7, 4};
+        //Number[] series2Numbers = {4, 6, 3, 8, 2, 10};                
+
+        // Turn the above arrays into XYSeries':
+        XYSeries series1 = new SimpleXYSeries(
+        		Arrays.asList(domainNumbers),          // SimpleXYSeries takes a List so turn our array into a List
+                Arrays.asList(series1Numbers), // Y_VALS_ONLY means use the element index as the x value
+                "Series1");                             // Set the display title of the series
+ 
+        // same as above
+    
+        // Create a formatter to use for drawing a series using LineAndPointRenderer
+        // and configure it from xml:
+        LineAndPointFormatter series1Format = new LineAndPointFormatter();     
+        series1Format.setPointLabelFormatter(new PointLabelFormatter());
+        series1Format.configure(this,
+                R.xml.line_formatter_1);
+ 
+        // add a new series' to the xyplot:
+        plot.addSeries(series1, series1Format);        
+ 
+        // reduce the number of range labels
+        plot.setTicksPerRangeLabel(3);
+        plot.getGraphWidget().setDomainLabelOrientation(-45);
+        plot.redraw();
+		
+	}
+
 	
 }
