@@ -32,14 +32,12 @@ public class Signal {
 	public static final double[] FREQUENCIES = {118, 151, 196, 252, 313, 394, 501, 630, 787, 980, 1260, 1575, 1917, 2594, 3150, 4009};
 
 	private double distance;
-	private short[] noise, data;
-	private ArrayList<Burst> incident,reflected;
+	private short[] noise, data;	
 	private double[] reflectivity;
 	private double[] frequency = null;
 	private String material;
-	private int numberOfBurstsExpected,numberOfBurstsDetected;
-	private int[] startIndicesIncident, startIndicesReflected;
-	private int burstDelayInSamples, burstLengthInSamples, burstDistanceInSamples;
+	
+	private int numberOfBurstsDetected, numberOfBurstsExpected;
 	private int startIndexNoise, stopIndexNoise;
 	private int noiseLength;
 	private String filePath; //raw data to be processed from the pcm file
@@ -66,7 +64,6 @@ public class Signal {
 		int[] indices;
 		byte[] buffer = null;
 		byte[] bufferNoise = null;
-		short[] plotData = null;
 		short[] noiseData = null;
 		short[] burstData = null;
 		short[] burstRegion = null;
@@ -93,7 +90,7 @@ public class Signal {
 			is = new FileInputStream(filePath);		
 			length = is.getChannel().size();
 			buffer = new byte[length.intValue()];
-			plotData = new short[length.intValue()];				
+			data = new short[length.intValue()];				
 			is.read(buffer);		
 
 			noiseTemplate = context.getResources().openRawResource(R.raw.noise);
@@ -110,18 +107,18 @@ public class Signal {
 		} catch(IOException e) {
 			e.printStackTrace();
 		}		
-		plotData = byte2short(buffer);
+		data = byte2short(buffer);
 		Log.d("PLR", "plotData converted successfully.");
 		noiseData = byte2short(bufferNoise);
 		Log.d("PLR", "noiseData converted successfully.");
 		// The noise is recognized to be between following indices: 4300 and 22100
 		//noiseExtracted = simpleMath.getNoiseStart(noiseData, plotData);		
-		startIndexNoise = getNoiseStartIndex(noiseData, plotData);
-		noise = getSubsequent(startIndexNoise, startIndexNoise+NOISE_CUTOFF, plotData);
+		startIndexNoise = getNoiseStartIndex(noiseData, data);
+		noise = getSubsequent(startIndexNoise, startIndexNoise+NOISE_CUTOFF, data);
 		Log.d("PLR", "Noise extracted successfully.");
 		// Detecting the regions with bursts - there should be no more than as many bursts as in the test file 
 		// burstRegion = simpleMath.getBurstRegion(noiseData, plotData);
-		burstRegion = getSubsequent(startIndexNoise+NOISE_CUTOFF, plotData.length-1, plotData);
+		burstRegion = getSubsequent(startIndexNoise+NOISE_CUTOFF, data.length-1, data);
 		Log.d("PLR", "Burst region extracted...");
 		indices = getBurstIndices(burstRegion); // returns burst indices from the data without noise
 		this.numberOfBurstsDetected = indices.length;		
