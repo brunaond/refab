@@ -4,6 +4,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
@@ -139,6 +140,9 @@ public class MeasureActivity extends Activity {
 		tv.setText("# Bursts: " + signal.getNumberOfBurstsDetected());
 		//signal.plot();
 //		Toast.makeText(this, "Pressed plot", Toast.LENGTH_SHORT).show();
+		double[] x = { 0.0d, 1.0d};
+		double[] y = {1.5d, 2.5d};
+		drawPlot(x, y);
 	}	
 	
 	public void drawPlot(double[] xData, double[] yData) {
@@ -151,7 +155,7 @@ public class MeasureActivity extends Activity {
 		domainNumbers = new Number[yData.length];
 		
         // Create a couple arrays of y-values to plot:
-		for (int i = 0; i< xData.length; i++) {
+		for (int i = 0; i< yData.length; i++) {
 			series1Numbers[i]=yData[i];
 			domainNumbers[i]=xData[i];			
 		}
