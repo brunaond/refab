@@ -55,10 +55,7 @@ public class MeasureActivity extends Activity {
 		recorder = new RefabRecorder(this, soundSource);
 		
 		if (getIntent().getExtras() != null){
-			setContentView(R.layout.post_processing_layout);
-			//filePath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getAbsolutePath();
-			//filePath += "/" + (String) getIntent().getExtras().get("cz.uceeb.refab.logFiles");
-			//Log.d("PLR", "Opened from file " + filePath);				
+			setContentView(R.layout.post_processing_layout);		
 		} else {
 			setContentView(R.layout.layout);
 			Log.d("PLR", "Opened from main menu");
@@ -97,8 +94,8 @@ public class MeasureActivity extends Activity {
 
 			player.setOnCompletionListener(new OnCompletionListener() {				
 				public void onCompletion(MediaPlayer mp) {
-					mp.release();
-					mp = null;		
+					player.release();
+					player = null;		
 					recorder.stop();					
 				    TextView mText = (TextView) findViewById(R.id.status_text_view);
 				    mText.setText("Recording finished!");
@@ -133,19 +130,26 @@ public class MeasureActivity extends Activity {
 		//Verify that string is not null
 		TextView tv = (TextView) findViewById(R.id.status_text_view);
 		tv.setText("Processing recording");
-		Signal signal = new Signal(this, recorder.getRawFilePath(), recorder.getWavFilePath(), 16);
+		Signal signal;
+		if (getIntent().getExtras() != null){
+			// TODO Path changed - redo to reflect creating new folder for refab and timestamp
+			String fileWavPath;
+			fileWavPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getAbsolutePath();
+			fileWavPath += "/" + (String) getIntent().getExtras().get("cz.uceeb.refab.logFiles");			   
+			signal = new Signal(this, fileWavPath, 16);
+		} else {
+			Log.d("PLR", recorder.getWavFilePath());
+			signal = new Signal(this, recorder.getRawFilePath(), recorder.getWavFilePath(), 16);
+		}
 		signal.processData();
 		tv.setText("Measured distance is: " + signal.getDistance());
 		tv = (TextView) findViewById(R.id.busrsts_detected_text_view);
 		tv.setText("# Bursts: " + signal.getNumberOfBurstsDetected());
-		//signal.plot();
-//		Toast.makeText(this, "Pressed plot", Toast.LENGTH_SHORT).show();
-		double[] x = { 0.0d, 1.0d};
-		double[] y = {1.5d, 2.5d};
-		drawPlot(x, y);
+
+		drawPlot(signal.getFrequencies(), signal.getReflectivity());
 	}	
 	
-	public void drawPlot(double[] xData, double[] yData) {
+	public void drawPlot(double[] xData, BigDecimal[] yData) {
 		XYPlot plot = (XYPlot) findViewById(R.id.mySimpleXYPlot);
 		Number[] series1Numbers, domainNumbers;
 		if (xData.length != yData.length){
@@ -184,6 +188,8 @@ public class MeasureActivity extends Activity {
         plot.setTicksPerRangeLabel(3);
         plot.getGraphWidget().setDomainLabelOrientation(-45);
         plot.redraw();
+        plot.setDomainLabel("Frequency[Hz]");
+        plot.setRangeLabel("Reflectivity[-]");
 		
 	}
 

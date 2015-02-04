@@ -1,7 +1,11 @@
 package cz.uceeb.refab.data;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import android.util.Log;
 import android.view.inputmethod.ExtractedTextRequest;
@@ -10,25 +14,31 @@ public class BurstData {
 	public static final byte DETECT_BURSTS = 0;
 	public static final byte ASSEMBLE_BURST = 1;
 	
-	private static final int DELAY_NOISE_TO_BURSTS = 5000; // in number of samples
-	private static final int BURST_LENGTH = 200; // 200 samples reflects length of burst region of 4.5ms
-	private static final int GAP_BETWEEN_BURSTS = 2000;
+	private static final int DELAY_NOISE_TO_BURSTS = 7270; // in number of samples
+	private static final int BURST_LENGTH = 176; // 200 samples reflects length of burst region of 4.5ms
+	private static final int GAP_BETWEEN_BURSTS = 4240;
 	
 	private ArrayList<Burst> incident,reflected;
 	private int numberOfBurstsExpected,numberOfBurstsDetected;
 	private int[] startIndicesIncident, startIndicesReflected;
-	private ArrayList<BigDecimal> reflectivity;
+	private ArrayList<BigDecimal> reflectivity, reflectivityNormalized;
 	private double distance; 
 	
 	public BurstData(short[] inData, int numberOfBurstsExpected, double distance, byte modeOfDetection) {
 		this.numberOfBurstsExpected = numberOfBurstsExpected;
 		this.distance = distance;
-		this.startIndicesIncident = findStartIndicesIncident(inData);
+//		this.startIndicesIncident = findStartIndicesIncident(inData);
+		this.startIndicesIncident = assembleStartIndicesIncident();
 		this.numberOfBurstsDetected = this.startIndicesIncident.length;
 		extractBursts(inData, this.startIndicesIncident);
 		calculateReflectivity();
+		normalizeReflectivity();
 	}
 	
+	/**
+	 * Calculates the reflectivity based on detected bursts. The burst need to be detected
+	 * correctly to provide a reasonable output. The reflectivity should span from 0.0 to 1.0.
+	 * Reflectivity 1.0 means that all the energy was reflected - it should be a very stiff material.*/
 	private void calculateReflectivity(){
 		Burst reflectedBurst;
 		this.reflectivity = new ArrayList<BigDecimal>();
@@ -41,6 +51,29 @@ public class BurstData {
 							reflectedBurst.getEnergyAtOrigin()/
 							incidentBurst.getEnergyInDistance()));			
 		}
+	}
+	
+	/**
+	 * Scales reflectivity down to scope of amplitude from 0 to 1. 
+	 */
+	private void normalizeReflectivity(){
+		BigDecimal maximum = new BigDecimal(0.0d);
+		this.reflectivityNormalized = new ArrayList<BigDecimal>();
+		Iterator<BigDecimal> iterator = this.reflectivity.iterator();
+		while (iterator.hasNext()) {
+			BigDecimal val = (BigDecimal) iterator.next();
+			if (val.compareTo(maximum)==1) {
+				maximum = val;
+			}
+		}		
+		iterator = this.reflectivity.iterator();
+		while (iterator.hasNext()) {
+			if (maximum.compareTo(new BigDecimal(0.0d))==0) {
+				iterator.next();
+			} else {
+				this.reflectivityNormalized.add(iterator.next().divide(maximum, BigDecimal.ROUND_UP));
+			}
+		}				
 	}
 	
 	/**
@@ -116,8 +149,41 @@ public class BurstData {
 	 * is long enough to relax the speaker and to dissipate unwanted reflections usually about
 	 * hundreds of milliseconds.
 	 */
-	private void assembleStartIndicesIncident(){
+	private int[] assembleStartIndicesIncident(){
+		int[] temp = new int[this.numberOfBurstsExpected];
 		
+		temp[0] = BurstData.DELAY_NOISE_TO_BURSTS; 
+		for (int i =1; i < temp.length; i++) {
+			temp[i] = temp[i-1] + 2*BURST_LENGTH+GAP_BETWEEN_BURSTS;
+		}
+		return temp;
+	}
+	
+	/**
+	 * Saves all burst into the folder. Bursts are named based on their index or order number.
+	 * 
+	 * @throws IOException 
+	 * @throws FileNotFoundException 
+	 */
+	public void saveBursts(String folderPath) throws FileNotFoundException, IOException {				
+		if (this.incident != null) {			
+			StringBuilder sb = new StringBuilder(folderPath);
+			
+			int pos = sb.indexOf("rec");			
+			sb.replace(pos, folderPath.length(), "incident");		
+
+			
+			for (Burst b : this.incident) {					
+				b.saveBurst(sb.toString());
+			}
+			
+			pos = sb.indexOf("incident");			
+			sb.replace(pos, sb.length(), "reflected");			
+			
+			for (Burst b : this.reflected) {
+				b.saveBurst(sb.toString());
+			}					
+		}
 	}
 	
 	/**
@@ -174,5 +240,30 @@ public class BurstData {
 	public ArrayList<BigDecimal> getReflectivity(){
 		return this.reflectivity;
 	}
-
+	
+	/**
+	 * @return the reflectivityNormalized
+	 */	
+	public ArrayList<BigDecimal> getReflectivityNormalized(){
+		Log.d("PLR", this.reflectivityNormalized.toString());
+		return this.reflectivityNormalized;
+	}	
+	
+	/**
+	 * Browse all bursts to collect their frequencies, intended for plotting purposes.
+	 * @return freq
+	 * */
+	public double[] getFrequencies(){
+		double[] freq = new double[this.numberOfBurstsDetected];
+		int i = 0;
+		for (Burst b : this.incident) {
+			freq[i] = b.getFrequency();
+			i++;
+		}
+		return freq;
+	}
+	
+	public int[] getBurstIndicesIncident(){
+		return this.startIndicesIncident;
+	}
 }

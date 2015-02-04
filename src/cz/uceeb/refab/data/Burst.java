@@ -22,6 +22,10 @@ public class Burst {
 	public Burst(short[] inData, int number, double distance) {
 		this.data = inData;
 		this.orderNumber = number;		
+		if (number > 15) {
+			number = 15;
+		}
+		this.frequency = FREQUENCIES_16BURSTS[number];
 		this.calculateCurrentEnergyAtOrigin();
 		this.calculateEnergyInDistance(distance);
 		
@@ -38,9 +42,10 @@ public class Burst {
 	
 	private void calculateEnergyInDistance(double distance){
 		double noise = 0.0;
+		double distanceTraveledbySound = distance*2;
 		this.calculatedEnergyInDistance = 
 				(COEFFA[orderNumber]*this.currentEnergyAtOrigin)/
-				(Math.pow(distance, ALPHA[orderNumber]))+noise;		
+				(Math.pow(distanceTraveledbySound, ALPHA[orderNumber]))+noise;		
 	}
 	
 	/**Calculates frequency of the burst based on zero crossing detection*/
@@ -77,9 +82,19 @@ public class Burst {
 	}
 	
 	
-	/**Saves the burst data to a file for future reference. Mainly intended for debugging purposes */
-	public void saveBurst(String filePath) throws FileNotFoundException, IOException{
-		FileOutputStream os = new FileOutputStream(filePath);
+	/**
+	 * Saves the burst data to a file for future reference. Mainly intended for debugging purposes.
+	 * The input string should include path specification with all the folders and also the prefix
+	 * for the burst since it is not possible to recognize from inside this class whether this burst
+	 * is incident wave or reflected one.
+	 */
+	public void saveBurst(String filePath) throws FileNotFoundException, IOException{		
+		FileOutputStream os;
+		StringBuilder sb = new StringBuilder(filePath);
+		sb.append("_burst_");
+		sb.append(this.orderNumber);
+		sb.append(".pcm");
+		os = new FileOutputStream(sb.toString());
 		os.write(short2byte(data));
 		os.flush();
 		os.close();
@@ -111,4 +126,5 @@ public class Burst {
 	public double getFrequency(){
 		return this.frequency;
 	}
+	
 }

@@ -1,5 +1,6 @@
 package cz.uceeb.refab;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -21,7 +22,7 @@ public class RefabRecorder extends AudioRecord {
 	int BufferElements2Rec = 1024; // want to play 2048 (2K) since 2 bytes we use only 1024
 	int BytesPerElement = 2; // 2 bytes in 16bit format
 	private static String filePath = null;
-	private static String fileWav = null;
+	private static StringBuilder fileWav = null;
 	
 	boolean isRecording = false;
 	private Thread recordingThread = null;
@@ -103,9 +104,15 @@ public class RefabRecorder extends AudioRecord {
 		/*Saving the WAV file*/
 		try {
 			is = new FileInputStream(filePath);
-			fileWav = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getAbsolutePath();
-			fileWav += "/rec_"+timeStamp+".wav";		
-			os = new FileOutputStream(fileWav);
+			fileWav = new StringBuilder(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getAbsolutePath());
+			fileWav.append("/refab/");						
+			fileWav.append(timeStamp);		
+			File file = new File(fileWav.toString());
+			file.mkdirs();
+			fileWav.append("/rec_"); 
+			fileWav.append(timeStamp);
+			fileWav.append(".wav");
+			os = new FileOutputStream(fileWav.toString());
 
 			length = is.getChannel().size();
 			buffer = new byte[length.intValue()];						
@@ -114,7 +121,7 @@ public class RefabRecorder extends AudioRecord {
 			os.write(header);
 			os.write(buffer);
 			os.close();		
-			MediaScannerConnection.scanFile(this.context, new String[] {fileWav, filePath}, null, null);
+			MediaScannerConnection.scanFile(this.context, new String[] {fileWav.toString(), filePath}, null, null);
 		} catch(FileNotFoundException e) {
 			e.printStackTrace();
 		} catch(IOException e) {
@@ -206,7 +213,7 @@ public class RefabRecorder extends AudioRecord {
 	}	
 	
 	public String[] filesProduced(){
-		String[] filesProduced = {fileWav, filePath};
+		String[] filesProduced = {fileWav.toString(), filePath};
 		return filesProduced;
 	}
 	
@@ -215,6 +222,6 @@ public class RefabRecorder extends AudioRecord {
 	}
 	
 	public String getWavFilePath(){
-		return fileWav;
+		return fileWav.toString();
 	}
 }
