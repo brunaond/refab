@@ -1,14 +1,13 @@
 package cz.uceeb.refab.data;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import android.content.Context;
 import android.util.Log;
-import android.view.inputmethod.ExtractedTextRequest;
 
 public class BurstData {
 	public static final byte DETECT_BURSTS = 0;
@@ -23,12 +22,14 @@ public class BurstData {
 	private int[] startIndicesIncident, startIndicesReflected;
 	private ArrayList<BigDecimal> reflectivity, reflectivityNormalized;
 	private double distance; 
+	Context context;
 	
-	public BurstData(short[] inData, int numberOfBurstsExpected, double distance, byte modeOfDetection) {
+	public BurstData(Context c, short[] inData, int numberOfBurstsExpected, double distance, byte modeOfDetection) {
 		this.numberOfBurstsExpected = numberOfBurstsExpected;
 		this.distance = distance;
-//		this.startIndicesIncident = findStartIndicesIncident(inData);
-		this.startIndicesIncident = assembleStartIndicesIncident();
+		this.context = c;
+		this.startIndicesIncident = findStartIndicesIncident(inData);
+//		this.startIndicesIncident = assembleStartIndicesIncident();
 		this.numberOfBurstsDetected = this.startIndicesIncident.length;
 		extractBursts(inData, this.startIndicesIncident);
 		calculateReflectivity();
@@ -92,8 +93,8 @@ public class BurstData {
 		int k=0;
 		for (int index : startIndices) { 			
 			// It is expected that the burst length is 4ms resulting in 200 samples. Allowing twice the size for safe detection.
-			this.incident.add(new Burst(getSubsequent(index, index+BURST_LENGTH, burstRegion), k, this.distance));
-			this.reflected.add(new Burst(getSubsequent(index+BURST_LENGTH, index+2*BURST_LENGTH, burstRegion), k, this.distance));
+			this.incident.add(new Burst(this.context, getSubsequent(index, index+BURST_LENGTH, burstRegion), k, this.distance));
+			this.reflected.add(new Burst(this.context ,getSubsequent(index+BURST_LENGTH, index+2*BURST_LENGTH, burstRegion), k, this.distance));
 			k++;
 		}		
 	}

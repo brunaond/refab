@@ -1,5 +1,6 @@
 package cz.uceeb.refab.data;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -84,6 +85,7 @@ public class Signal {
 		distance = 0;
 		StringBuilder nameString = new StringBuilder(this.fileWav);
 		FileOutputStream os;
+		DataOutputStream dos;
 
 		//		TextView mText = (TextView) v.findViewById(R.id.status_text_view);
 
@@ -124,12 +126,24 @@ public class Signal {
 //		Log.d("PLR", "Noise extracted successfully.");
 		dataCorr = new double[2*noise.length];
 		dataCorr = correlation_fast(noise);		
-		nameString.replace(nameString.indexOf("rec"), nameString.length(), "extracted_noise.pcm");
+		
 		try {
+			nameString.replace(nameString.indexOf("rec"), nameString.length(), "noise_extracted.pcm");
 			os = new FileOutputStream(nameString.toString());
 			os.write(short2byte(noise));
 			os.flush();
-			os.close();		
+			os.close();
+			MediaScannerConnection.scanFile(this.context, new String[] {nameString.toString()}, null, null);
+			
+			nameString.replace(nameString.indexOf("noise"), nameString.length(), "noise_correlated.pcm");
+			os = new FileOutputStream(nameString.toString());
+			dos = new DataOutputStream(os);			
+			for (int i = 0; i < dataCorr.length; i++) {
+				dos.writeDouble(dataCorr[i]);	
+			}
+			dos.flush();
+			dos.close();
+			MediaScannerConnection.scanFile(this.context, new String[] {nameString.toString()}, null, null);
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -141,6 +155,21 @@ public class Signal {
 		abs(dataCorr);		
 //		Log.d("PLR", "Abs computed.");
 		dataCorrButter = butterworth(dataCorr);
+		try {
+			nameString.replace(nameString.indexOf("noise"), nameString.length(), "noise_filtered.pcm");
+			os = new FileOutputStream(nameString.toString());
+			dos = new DataOutputStream(os);			
+			for (int i = 0; i < dataCorrButter.length; i++) {
+				dos.writeDouble(dataCorrButter[i]);	
+			}
+			dos.flush();
+			dos.close();
+			MediaScannerConnection.scanFile(this.context, new String[] {nameString.toString()}, null, null);
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 //		Log.d("PLR", "Filter applied.");
 		//drawPlot(data_corr_butter);
 		//Log.d("PLR", "Data plotted.");
@@ -155,9 +184,22 @@ public class Signal {
 		// Detecting the regions with bursts - there should be no more than as many bursts as in the test file 
 		// burstRegion = simpleMath.getBurstRegion(noiseData, plotData);
 		burstRegion = getSubsequent(startIndexNoise+NOISE_CUTOFF, data.length-1, data);
+		try {
+			nameString.replace(nameString.indexOf("noise"), nameString.length(), "burst_region.pcm");
+			os = new FileOutputStream(nameString.toString());
+			os.write(short2byte(burstRegion));
+			os.flush();
+			os.close();
+			MediaScannerConnection.scanFile(this.context, new String[] {nameString.toString()}, null, null);
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
 //		Log.d("PLR", "Burst region extracted...");
 
-		bursts = new BurstData(burstRegion, this.numberOfBurstsExpected, this.distance, BurstData.DETECT_BURSTS);
+		bursts = new BurstData(this.context, burstRegion, this.numberOfBurstsExpected, this.distance, BurstData.DETECT_BURSTS);
 		this.numberOfBurstsDetected = bursts.getNumberOfBurstsDetected();
 		this.reflectivity = new BigDecimal[this.numberOfBurstsDetected]; 
 		bursts.getReflectivity().toArray(reflectivity);
@@ -334,13 +376,13 @@ public class Signal {
 		return corr;
 	}
 	
-	private byte[] short2byte(short[] sData) {
-	    int shortArrsize = sData.length;
+	private byte[] short2byte(short[] inData) {
+	    short[] sData = inData;
+		int shortArrsize = sData.length;
 	    byte[] bytes = new byte[shortArrsize * 2];
 	    for (int i = 0; i < shortArrsize; i++) {
 	        bytes[i * 2] = (byte) (sData[i] & 0x00FF);
 	        bytes[(i * 2) + 1] = (byte) (sData[i] >> 8);
-	        sData[i] = 0;
 	    }
 	    return bytes;
 	}	

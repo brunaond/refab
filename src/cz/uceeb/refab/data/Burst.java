@@ -4,6 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import android.content.Context;
+import android.media.MediaScannerConnection;
+
 
 public class Burst {
 	private static final double[] ALPHA = {2.2877,1.6509,1.7962,1.1580,0.9992,1.0110,1.0097,0.9822,0.8065,0.8297,0.8215,0.8206,0.8687,0.9528,1.0751,0.5372};
@@ -18,14 +21,16 @@ public class Burst {
 	private int orderNumber;	
 	private int[] peakMaxIndices, peakMinIndices, zeroCrossingIndices;
 	
+	private Context context;
 	
-	public Burst(short[] inData, int number, double distance) {
+	public Burst(Context c, short[] inData, int number, double distance) {
 		this.data = inData;
 		this.orderNumber = number;		
 		if (number > 15) {
 			number = 15;
 		}
 		this.frequency = FREQUENCIES_16BURSTS[number];
+		this.context = c;
 		this.calculateCurrentEnergyAtOrigin();
 		this.calculateEnergyInDistance(distance);
 		
@@ -98,15 +103,16 @@ public class Burst {
 		os.write(short2byte(data));
 		os.flush();
 		os.close();
+		MediaScannerConnection.scanFile(this.context, new String[] {sb.toString()}, null, null);
 	}
 	
-	private byte[] short2byte(short[] sData) {
+	private byte[] short2byte(short[] inData) {
+		short [] sData = inData;
 	    int shortArrsize = sData.length;
 	    byte[] bytes = new byte[shortArrsize * 2];
 	    for (int i = 0; i < shortArrsize; i++) {
 	        bytes[i * 2] = (byte) (sData[i] & 0x00FF);
-	        bytes[(i * 2) + 1] = (byte) (sData[i] >> 8);
-	        sData[i] = 0;
+	        bytes[(i * 2) + 1] = (byte) (sData[i] >> 8);	        
 	    }
 	    return bytes;
 	}
