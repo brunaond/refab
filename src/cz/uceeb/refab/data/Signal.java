@@ -1,5 +1,6 @@
 package cz.uceeb.refab.data;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -86,6 +87,7 @@ public class Signal {
 		StringBuilder nameString = new StringBuilder(this.fileWav);
 		FileOutputStream os;
 		DataOutputStream dos;
+		DataInputStream dis;
 
 		//		TextView mText = (TextView) v.findViewById(R.id.status_text_view);
 
@@ -95,7 +97,8 @@ public class Signal {
 			return;		
 		}
 		try {
-			is = new FileInputStream(filePath);		
+			is = new FileInputStream(filePath);
+//			dis = new DataInputStream(is);
 			length = is.getChannel().size();
 			buffer = new byte[length.intValue()];
 			data = new short[length.intValue()];				
@@ -141,6 +144,18 @@ public class Signal {
 			for (int i = 0; i < dataCorr.length; i++) {
 				dos.writeDouble(dataCorr[i]);	
 			}
+			os.close();
+			MediaScannerConnection.scanFile(this.context, new String[] {nameString.toString()}, null, null);
+			
+			nameString.replace(nameString.indexOf("noise"), nameString.length(), "original_data_reloaded.pcm");
+			os = new FileOutputStream(nameString.toString());
+//			dos = new DataOutputStream(os);			
+//			for (int i = 0; i < data.length; i++) {
+//				dos.writeShort(data[i]);	
+//			}
+			os.write(short2byte(data));
+			os.flush();
+			os.close();
 			dos.flush();
 			dos.close();
 			MediaScannerConnection.scanFile(this.context, new String[] {nameString.toString()}, null, null);
@@ -156,7 +171,7 @@ public class Signal {
 //		Log.d("PLR", "Abs computed.");
 		dataCorrButter = butterworth(dataCorr);
 		try {
-			nameString.replace(nameString.indexOf("noise"), nameString.length(), "noise_filtered.pcm");
+			nameString.replace(nameString.indexOf("original"), nameString.length(), "noise_filtered.pcm");
 			os = new FileOutputStream(nameString.toString());
 			dos = new DataOutputStream(os);			
 			for (int i = 0; i < dataCorrButter.length; i++) {
@@ -255,8 +270,9 @@ public class Signal {
 	}
 
 	private short[] byte2short(byte[] bData) {
-		short[] sData;
-		short sDataTemp;
+		short[] sData;		
+		int[] iData;
+		int iDataTemp;
 		int bDataLength = bData.length;
 		int sDataLength;
 
@@ -264,14 +280,17 @@ public class Signal {
 		else sDataLength = bDataLength/2;
 
 		sData = new short[sDataLength];
+		iData = new int[sDataLength];
 
 		for(int i=0;i<sDataLength;i++) {
-			sData[i] = 0x0000;
-			sDataTemp = 0x0000;
-			sData[i] = bData[i*2+1];
-			sData[i] = (short) (sData[i]<<8);
-			sDataTemp = bData[i*2];
-			sData[i] = (short) (sData[i]|sDataTemp);			
+			iData[i] = 0x00000000;
+			iDataTemp = 0x00000000;
+			iData[i] = bData[i*2+1];
+			iData[i] = (iData[i]<<8);
+			iDataTemp = (bData[i*2]);
+			iDataTemp = iDataTemp & 0x000000FF;			
+			iData[i] = (iData[i]|iDataTemp);
+			sData[i] = (short) iData[i];
 		}
 		return sData;
 	}
