@@ -59,7 +59,7 @@
             android:id="@+id/mySimpleXYPlot"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            androidPlot.domainLabel="Distance[cm]"
+            androidPlot.domainLabel="Frequency[Hz]"
             androidPlot.domainLabelWidget.labelPaint.textSize="@dimen/domain_label_font_size"
             androidPlot.graphWidget.domainLabelPaint.textSize="@dimen/domain_tick_label_font_size"
             androidPlot.graphWidget.domainOriginLabelPaint.textSize="@dimen/domain_tick_label_font_size"
@@ -75,7 +75,7 @@
             androidPlot.legendWidget.iconSizeMetrics.widthMetric.value="15dp"
             androidPlot.legendWidget.positionMetrics.anchor="right_bottom"
             androidPlot.legendWidget.textPaint.textSize="@dimen/legend_text_font_size"
-            androidPlot.rangeLabel="Value[-]"
+            androidPlot.rangeLabel="Reflectivity[-]"
             androidPlot.rangeLabelWidget.labelPaint.textSize="@dimen/range_label_font_size"
             androidPlot.title="Data Plot"
             androidPlot.titleWidget.labelPaint.textSize="@dimen/title_font_size" />

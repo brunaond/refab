@@ -15,7 +15,7 @@ public class BurstData {
 	
 	private static final int DELAY_NOISE_TO_BURSTS = 7270; // in number of samples
 	private static final int BURST_LENGTH = 176; // 200 samples reflects length of burst region of 4.5ms
-	private static final int GAP_BETWEEN_BURSTS = 4240;
+	private static final int GAP_BETWEEN_BURSTS = 4240; // in number of samples
 	
 	private ArrayList<Burst> incident,reflected;
 	private int numberOfBurstsExpected,numberOfBurstsDetected;

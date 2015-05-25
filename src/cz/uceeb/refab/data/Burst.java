@@ -11,38 +11,72 @@ import android.media.MediaScannerConnection;
 public class Burst {
 //	private static final double[] ALPHA = {2.2877,1.6509,1.7962,1.1580,0.9992,1.0110,1.0097,0.9822,0.8065,0.8297,0.8215,0.8206,0.8687,0.9528,1.0751,0.5372};
 //	private  static final double[] COEFFA = {55.0833,12.4888,54.0666,10.4352,3.0666,3.0303,2.9293,2.7145,1.7792,2.0170,1.9585,2.0740,2.1382,2.2571,3.5222,0.1455};
-	private static final double[] ALPHA={ 	2.0707d,
-											2.0275d,
-											2.0350d,
-											2.0841d,
-											2.0738d,
-											2.0768d,
-											2.0199d,
-											1.9551d,
-											2.0937d,
-											1.8834d,
-											2.1319d,
-											1.9132d,
-											1.9117d,
-											1.9554d,
-											1.8588d,
-											1.9272d};
-	private  static final double[] COEFFA = {	136.6664d,
-												104.7057d,
-												116.9680d,
-												141.2588d,
-												131.9383d,
-												141.6459d,
-												109.8468d, 
-												70.3329d,
-												133.6649d, 
-												67.0906d,
-												157.0402d, 
-												80.9513d, 
-												69.1043d,
-												83.8278d, 
-												69.9718d, 
-												97.4525d};	
+//	private static final double[] ALPHA={ 	2.0707d,
+//											2.0275d,
+//											2.0350d,
+//											2.0841d,
+//											2.0738d,
+//											2.0768d,
+//											2.0199d,
+//											1.9551d,
+//											2.0937d,
+//											1.8834d,
+//											2.1319d,
+//											1.9132d,
+//											1.9117d,
+//											1.9554d,
+//											1.8588d,
+//											1.9272d};
+//	private  static final double[] COEFFA = {	136.6664d,
+//												104.7057d,
+//												116.9680d,
+//												141.2588d,
+//												131.9383d,
+//												141.6459d,
+//												109.8468d, 
+//												70.3329d,
+//												133.6649d, 
+//												67.0906d,
+//												157.0402d, 
+//												80.9513d, 
+//												69.1043d,
+//												83.8278d, 
+//												69.9718d, 
+//												97.4525d};
+	private static final double[] ALPHA={ 	1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d,
+		1.6d};
+	
+private  static final double[] COEFFA = {	25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d,
+		25.0d};		
+
 	//public static final int[] samples16bursts = {372, 292, 224, 175, 141, 112, 88, 70, 56, 45, 35, 28, 23, 17, 14, 11};
 	private static final int[] FREQUENCIES_16BURSTS = {118, 151, 196, 252, 313, 394, 501, 630, 787, 980, 1260, 1575, 1917, 2594, 3150, 4009};
 	private static final int RECORDER_SAMPLERATE = 44100;
@@ -79,10 +113,10 @@ public class Burst {
 	
 	private void calculateEnergyInDistance(double distance){
 		double noise = 0.0;
-		double distanceTraveledbySound = distance*2;
+		double distanceTraveledbySound = (distance*2)/100.0d; // in meters
 		this.calculatedEnergyInDistance = 
-				(COEFFA[orderNumber]*this.currentEnergyAtOrigin)/
-				(Math.pow(distanceTraveledbySound, ALPHA[orderNumber]))+noise;		
+				(0.001*COEFFA[orderNumber]*this.currentEnergyAtOrigin)/
+				(Math.pow(distanceTraveledbySound, ALPHA[orderNumber]));		
 	}
 	
 	/**Calculates frequency of the burst based on zero crossing detection*/

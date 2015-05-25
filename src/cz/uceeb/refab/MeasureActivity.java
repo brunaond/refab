@@ -28,6 +28,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
 import com.androidplot.xy.SimpleXYSeries;
@@ -53,7 +54,7 @@ public class MeasureActivity extends Activity {
 		
 		//Create an instance of the RefabRecorder
 		recorder = new RefabRecorder(this, soundSource);
-		
+		       
 		if (getIntent().getExtras() != null){
 			setContentView(R.layout.post_processing_layout);		
 		} else {
@@ -162,9 +163,7 @@ public class MeasureActivity extends Activity {
 		for (int i = 0; i< yData.length; i++) {
 			series1Numbers[i]=yData[i];
 			domainNumbers[i]=xData[i];			
-		}
-        //Number[] series1Numbers = {1, 8, 5, 2, 7, 4};
-        //Number[] series2Numbers = {4, 6, 3, 8, 2, 10};                
+		}           
 
         // Turn the above arrays into XYSeries':
         XYSeries series1 = new SimpleXYSeries(
@@ -185,13 +184,13 @@ public class MeasureActivity extends Activity {
         plot.addSeries(series1, series1Format);        
  
         // reduce the number of range labels
-        plot.setTicksPerRangeLabel(3);
-        plot.getGraphWidget().setDomainLabelOrientation(-45);
+        plot.setTicksPerRangeLabel(4);
+        plot.setTicksPerDomainLabel(2);
+        plot.getGraphWidget().setDomainLabelOrientation(0);
         plot.redraw();
-        plot.setDomainLabel("Frequency[Hz]");
-        plot.setRangeLabel("Reflectivity[-]");
-		
+        Number lowerBound, upperBound;
+        lowerBound = 0.0;
+        upperBound = 1.0;
+        plot.setRangeBoundaries(lowerBound, upperBound, BoundaryMode.FIXED );
 	}
-
-	
 }
