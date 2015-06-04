@@ -20,6 +20,7 @@ import android.media.MediaScannerConnection;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.audiofx.AutomaticGainControl;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
@@ -37,7 +38,7 @@ import com.androidplot.xy.XYSeries;
 
 public class MeasureActivity extends Activity {
 	MediaPlayer player;
-	RefabRecorder recorder;
+	RefabRecorder recorder;	
 	AutomaticGainControl mAGC;
 	private static int idTestSample;
 	private static int soundSource;
@@ -49,7 +50,7 @@ public class MeasureActivity extends Activity {
 		super.onCreate(savedInstanceState);			
 		
 		//Prepare inner variables for recording
-		idTestSample = R.raw.test;
+		idTestSample = R.raw.source_1ms_2500_6400;
 		soundSource= MediaRecorder.AudioSource.VOICE_RECOGNITION;
 		
 		//Create an instance of the RefabRecorder
@@ -149,6 +150,22 @@ public class MeasureActivity extends Activity {
 
 		drawPlot(signal.getFrequencies(), signal.getReflectivity());
 	}	
+	
+	public void startTimer(View v){
+		TextView tv = (TextView) findViewById(R.id.status_text_view);
+		new CountDownTimer(30000, 5000) {
+	
+		     public void onTick(long millisUntilFinished) {
+	    	 	playAndRecord(getCurrentFocus());
+		         
+		     }
+	
+		     public void onFinish() {
+		    	 
+		     }
+		 }.start();
+
+	}
 	
 	public void drawPlot(double[] xData, BigDecimal[] yData) {
 		XYPlot plot = (XYPlot) findViewById(R.id.mySimpleXYPlot);

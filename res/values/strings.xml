@@ -12,6 +12,7 @@
     <string name="play_and_record">Play and record</string>
     <string name="play">Play</string>
     <string name="plot">Plot</string>
+    <string name="timer">Timer</string>
     <string name="calculate">Calculate</string>
     <string name="status_view">Press the rec and play button to record.</string>
     <string name="nburst">#Bursts: N/A</string>
