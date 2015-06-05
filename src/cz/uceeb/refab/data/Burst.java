@@ -133,6 +133,9 @@ private  static final double[] TABLE150_100 = {	0.0210d,
 	private void calculateEnergyInDistance(double distance){
 		double noise = 0.0;
 		double distanceTraveledbySound = (distance*2)/100.0d; // in meters
+
+		// The table so far seems to provide the best resutls.
+		// TODO - Do more measurements to get better resolution.
 		if (distanceTraveledbySound > 2.0d) {
 			this.calculatedEnergyInDistance = this.currentEnergyAtOrigin*TABLE200_N_GREATER[orderNumber];
 		} else if ((distanceTraveledbySound < 2.0d)&(distanceTraveledbySound > 1.5d)) {
@@ -142,13 +145,16 @@ private  static final double[] TABLE150_100 = {	0.0210d,
 		} else {
 			this.calculatedEnergyInDistance = this.currentEnergyAtOrigin*1.9d*TABLE150_100[orderNumber];
 		}
-		// Used in case the equation has correct parameters
+
+		// Yields false results for low frequencies.
 		/*this.calculatedEnergyInDistance = 
-				(0.001*COEFFA[orderNumber]*this.currentEnergyAtOrigin)/
+				(COEFFA[orderNumber]*this.currentEnergyAtOrigin)/
 				(Math.pow(distanceTraveledbySound, ALPHA[orderNumber]));*/		
 	}
 	
-	/**Calculates frequency of the burst based on zero crossing detection*/
+	/**Calculates frequency of the burst based on zero crossing detection
+	 * NOTE: If possible, perform oversampling, it seems that for high frequencies this does not provide good results.
+	 * For now using the table FREQUENCIES_XXSBURSTS seems better. This part would be used only if the test sample is unknown.*/
 	private void calculateFrequency(){
 		this.frequency =  RECORDER_SAMPLERATE/findMax(diff(this.zeroCrossingIndices));
 	}

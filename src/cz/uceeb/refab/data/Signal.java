@@ -35,11 +35,11 @@ public class Signal {
 	//public static final int[] samples16bursts = {372, 292, 224, 175, 141, 112, 88, 70, 56, 45, 35, 28, 23, 17, 14, 11};
 //	public static final int[] FREQUENCIES = {118, 151, 196, 252, 313, 394, 501, 630, 787, 980, 1260, 1575, 1917, 2594, 3150, 4009};
 
-	private double distance;
+	private double distance; // the distance from microphone to measurement plane (one way only!)
 	private short[] noise, data;	
 	private BigDecimal[] reflectivity, reflectivityNormalized;
 	private double[] frequencies;
-	private String material;
+	private String material; // TBD - material estimation
 	
 	private int numberOfBurstsDetected, numberOfBurstsExpected;
 	private int startIndexNoise, stopIndexNoise;
@@ -190,7 +190,7 @@ public class Signal {
 		//Log.d("PLR", "Data plotted.");
 
 		peak = localMax(dataCorrButter);
-		// TODO Fix the numbers determining where to search for peak
+		// TODO Fix the numbers determining where to search for peak, limits the measurement range and distance.
 		data_sub = getSubsequent(peak+50, peak+180, dataCorrButter);		
 		maximum = localMax(data_sub);
 		time = (double)(maximum+50)/RECORDER_SAMPLERATE;

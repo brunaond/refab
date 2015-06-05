@@ -14,7 +14,8 @@ public class BurstData {
 	public static final byte ASSEMBLE_BURST = 1;
 	
 	private static final int DELAY_NOISE_TO_BURSTS = 7270; // in number of samples
-	private static final int BURST_LENGTH = 176; // 200 samples reflects length of burst region of 4.5ms
+	//private static final int BURST_LENGTH = 176; // 200 samples reflects length of burst region of 4.5ms, 176 for sample with 4ms burst
+	private static final int BURST_LENGTH = 45; // sample with 1ms burst
 	private static final int GAP_BETWEEN_BURSTS = 4240; // in number of samples
 	
 	private ArrayList<Burst> incident,reflected;
@@ -39,7 +40,8 @@ public class BurstData {
 	/**
 	 * Calculates the reflectivity based on detected bursts. The burst need to be detected
 	 * correctly to provide a reasonable output. The reflectivity should span from 0.0 to 1.0.
-	 * Reflectivity 1.0 means that all the energy was reflected - it should be a very stiff material.*/
+	 * Reflectivity 1.0 means that all the energy was reflected - it should be a very stiff material.
+	 * NOTE: In some rare cases it is possible to have reflectivity greater than one. In our case this should not happen. */
 	private void calculateReflectivity(){
 		Burst reflectedBurst;
 		this.reflectivity = new ArrayList<BigDecimal>();
@@ -56,6 +58,7 @@ public class BurstData {
 	
 	/**
 	 * Scales reflectivity down to scope of amplitude from 0 to 1. 
+	 * Used for debugging only to check the curve.
 	 */
 	private void normalizeReflectivity(){
 		BigDecimal maximum = new BigDecimal(0.0d);
@@ -78,12 +81,12 @@ public class BurstData {
 	}
 	
 	/**
-	 * Finds bursts based on prior information about the sample signal setup.
-	 * Using the local variable describing the signal produce the bursts are looked
-	 * for on known location in the signal and extracted without any intelligent
+	 * Finds bursts based on prior information about the test sample setup.
+	 * The time between bursts is known, the time from noise to first sample is known, the length of the sample is known.
+	 * Using the BURST_LENGTH and startIndices to look for reflected bursts, known location in the signal is extracted without any intelligent
 	 * detection efforts.
 	 * 
-	 * @param burst Region
+	 * @param burstRegion
 	 * @param startIndices 
 	 */
 	private void extractBursts(short[] burstRegion, int[] startIndices){
@@ -91,10 +94,17 @@ public class BurstData {
 		this.incident = new ArrayList<Burst>();
 		this.reflected = new ArrayList<Burst>();
 		int k=0;
+		
+		double distanceTravelledBySound = (this.distance*2)/100.0d;
+		int distanceTravelledBySoundSamples =(int) Math.round((distanceTravelledBySound/340)*Signal.RECORDER_SAMPLERATE);
 		for (int index : startIndices) { 			
 			// It is expected that the burst length is 4ms resulting in 200 samples. Allowing twice the size for safe detection.
+			//this.incident.add(new Burst(this.context, getSubsequent(index, index+BURST_LENGTH, burstRegion), k, this.distance));
+			//this.reflected.add(new Burst(this.context ,getSubsequent(index+BURST_LENGTH, index+2*BURST_LENGTH, burstRegion), k, this.distance));
+			
+			// Smarter estimation of reflected burst with variable distance from the reflection plane - WATCH-OUT. If distance is wrong, the result fails miserably!
 			this.incident.add(new Burst(this.context, getSubsequent(index, index+BURST_LENGTH, burstRegion), k, this.distance));
-			this.reflected.add(new Burst(this.context ,getSubsequent(index+BURST_LENGTH, index+2*BURST_LENGTH, burstRegion), k, this.distance));
+			this.reflected.add(new Burst(this.context ,getSubsequent(index+distanceTravelledBySoundSamples,index+distanceTravelledBySoundSamples+BURST_LENGTH , burstRegion), k, this.distance));
 			k++;
 		}		
 	}
@@ -102,7 +112,7 @@ public class BurstData {
 	
 	/**
 	 * Method looks for bursts within given signal and tries automatically assess 
-	 * which part of the signal is most likely a burst and which is just a nose.
+	 * which part of the signal is most likely a burst and which is just a noise.
 	 * Returns indices of start of detected bursts. Length of returned field can be
 	 * saved in field numberOfBurstsDetected and compared with numberOfBurstsExpected.
 	 * If they match, it suggests that the detector was successful, but it should not 
@@ -146,7 +156,7 @@ public class BurstData {
 	 * noise at the beginning of the signal and the first burst, time of the burst and then
 	 * from gap which is between single bursts. Generally the values for noise tend to be 
 	 * less than a second, the gap between noise and first burst is also in seconds,
-	 * length of the burst is in milliseconds, cca 1.5ms to 5.0ms and the gap between the bursts
+	 * length of the burst is in milliseconds, cca 1ms to 5.0ms and the gap between the bursts
 	 * is long enough to relax the speaker and to dissipate unwanted reflections usually about
 	 * hundreds of milliseconds.
 	 */
