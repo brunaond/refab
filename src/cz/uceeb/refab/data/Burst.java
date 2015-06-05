@@ -77,8 +77,27 @@ private  static final double[] COEFFA = {	25.0d,
 		25.0d,
 		25.0d};		
 
+private  static final double[] TABLE200_N_GREATER = {	0.0060d,
+	0.0060d,
+	0.0060d,
+	0.0082d,
+	0.0110d};
+
+private  static final double[] TABLE200_150 = {	0.0112d,
+	0.0112d,
+	0.0112d,
+	0.0145d,
+	0.0145d};
+
+private  static final double[] TABLE150_100 = {	0.0210d,
+	0.0210d,
+	0.0210d,
+	0.0325d,
+	0.0430d};
+
 	//public static final int[] samples16bursts = {372, 292, 224, 175, 141, 112, 88, 70, 56, 45, 35, 28, 23, 17, 14, 11};
 	private static final int[] FREQUENCIES_16BURSTS = {118, 151, 196, 252, 313, 394, 501, 630, 787, 980, 1260, 1575, 1917, 2594, 3150, 4009};
+	private static final int[] FREQUENCIES_5BURSTS = {2700, 3150, 4000, 5000, 6400};
 	private static final int RECORDER_SAMPLERATE = 44100;
 	
 	private short[] data;
@@ -95,7 +114,7 @@ private  static final double[] COEFFA = {	25.0d,
 			number = 15;
 		}
 		this.orderNumber = number;
-		this.frequency = FREQUENCIES_16BURSTS[number];
+		this.frequency = FREQUENCIES_5BURSTS[number];
 		this.context = c;
 		this.calculateCurrentEnergyAtOrigin();
 		this.calculateEnergyInDistance(distance);
@@ -114,9 +133,19 @@ private  static final double[] COEFFA = {	25.0d,
 	private void calculateEnergyInDistance(double distance){
 		double noise = 0.0;
 		double distanceTraveledbySound = (distance*2)/100.0d; // in meters
-		this.calculatedEnergyInDistance = 
+		if (distanceTraveledbySound > 2.0d) {
+			this.calculatedEnergyInDistance = this.currentEnergyAtOrigin*TABLE200_N_GREATER[orderNumber];
+		} else if ((distanceTraveledbySound < 2.0d)&(distanceTraveledbySound > 1.5d)) {
+			this.calculatedEnergyInDistance = this.currentEnergyAtOrigin*TABLE200_150[orderNumber];
+		} else if ((distanceTraveledbySound < 1.5d)&(distanceTraveledbySound > 1.0d)) {
+			this.calculatedEnergyInDistance = this.currentEnergyAtOrigin*TABLE150_100[orderNumber];
+		} else {
+			this.calculatedEnergyInDistance = this.currentEnergyAtOrigin*1.9d*TABLE150_100[orderNumber];
+		}
+		// Used in case the equation has correct parameters
+		/*this.calculatedEnergyInDistance = 
 				(0.001*COEFFA[orderNumber]*this.currentEnergyAtOrigin)/
-				(Math.pow(distanceTraveledbySound, ALPHA[orderNumber]));		
+				(Math.pow(distanceTraveledbySound, ALPHA[orderNumber]));*/		
 	}
 	
 	/**Calculates frequency of the burst based on zero crossing detection*/
