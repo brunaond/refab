@@ -153,7 +153,7 @@ public class MeasureActivity extends Activity {
 	
 	public void startTimer(View v){
 		TextView tv = (TextView) findViewById(R.id.status_text_view);
-		new CountDownTimer(30000, 5000) {
+		new CountDownTimer(21000, 5000) {
 	
 		     public void onTick(long millisUntilFinished) {
 	    	 	playAndRecord(getCurrentFocus());
